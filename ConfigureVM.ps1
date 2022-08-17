@@ -1,7 +1,8 @@
-﻿$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Stop"
 
 $Path = "C:\DeploymentStuff"
 $LogFileName = "ScriptLog.log"
+$UpdateLog = "windowsupdate.log"
 $ScriptFullPath = "$Path\$LogFileName"
 
 
@@ -18,6 +19,8 @@ If (-not(Test-Path $ScriptFullPath)){
 Add-Content -Value "********************************"      -Path $ScriptFullPath
 Add-Content -Value "Deployment Script Extension Log by G2" -Path $ScriptFullPath
 Add-Content -Value "********************************"      -Path $ScriptFullPath
+
+Add-Content -Value "This script is running from : $PSScriptRoot"      -Path $ScriptFullPath
 
 
 If (-not(Test-Path "C:\ProgramData\chocolatey\choco.exe")){
@@ -44,6 +47,9 @@ choco install vlc -y
 choco install 7zip.install -y
 choco install fslogix -y
 choco install microsoft-edge -y
+choco install putty -y
+choco install vscode -y
+choco install winscp -y
 
 Add-Content -Value "Apps installed" -Path $ScriptFullPath
 
@@ -64,6 +70,15 @@ Add-Content -Value "Apps installed" -Path $ScriptFullPath
 
 Add-Content -Value "Reg keys installed" -Path $ScriptFullPath
 
+
+#Add-Content -Value "Removing NLA to allow RDP" -Path $ScriptFullPath
+
+#New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name SecurityLayer -Value 0 -PropertyType "DWORD" -Force
+#New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name UserAuthentication -Value 0 -PropertyType "DWORD" -Force
+
+
+
+
 Add-Content -Value "Starting Windows Update" -Path $ScriptFullPath
 
 
@@ -71,7 +86,7 @@ Add-Content -Value "Starting Windows Update" -Path $ScriptFullPath
 
         Install-PackageProvider NuGet -Force
         Set-PSRepository PSGallery -InstallationPolicy Trusted
-        Install-Module PSWindowsUpdate -SkipPublisherCheck -Force -Confirm:$false
+        Install-Module PSWindowsUpdate -SkipPublisherCheck -Force -Confirm:$false 
     }
     Catch {
 
@@ -83,7 +98,9 @@ Add-Content -Value "Starting Windows Update" -Path $ScriptFullPath
     }
 
 
+Get-WindowsUpdate -AcceptAll -Install -IgnoreReboot | Out-File $Path\$UpdateLog
 
-Get-WindowsUpdate -AcceptAll -Install -IgnoreReboot
+
+Add-Content -Value "Verything should be ok" -Path $ScriptFullPath
 
 Exit 0
